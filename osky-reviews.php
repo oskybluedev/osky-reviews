@@ -13,6 +13,7 @@ Author: OskyBlue
 */
 
 ob_start();
+$wp_rewrite = new WP_Rewrite();
 function wait_utill_load ()
 {
 	
@@ -185,25 +186,18 @@ $table_name = 'wp_osky_reviews_emails';
 create_tables_if_not_exist();
 
 
-function wptuts_styles_with_the_lot()
+function or_syle_sync()
 
 {
+// Register the style 
+wp_register_style( 'review-style', plugins_url( 'reviews.css', __FILE__ ));
 
-    // Register the style like this for a plugin:
-
-    wp_register_style( 'custom-style', plugins_url( 'reviews.css', __FILE__ ), array(), '20120208', 'all' );
-
- 
-
- 
-
-    // For either a plugin or a theme, you can then enqueue the style:
-
-    wp_enqueue_style( 'custom-style' );
-
+ //enqueue the style:
+wp_enqueue_style( 'review-style' );
 }
+add_action( 'wp_enqueue_scripts', 'or_syle_sync' );
 
-add_action( 'wp_enqueue_scripts', 'wptuts_styles_with_the_lot' );
+
 
 // register post type for Reviews
 
@@ -249,7 +243,7 @@ $args = array(
 
 'publicly_queryable' => true,
 
-'taxonomies' => array('category'),  
+//'taxonomies' => array('category'),  
 
 'show_ui' => true,
 
@@ -1230,6 +1224,7 @@ $datebool3 = 1;
 
 }
 
+
 function fm_shortcode() {form_code();}
 
 function pst_shortcode() {add_reviews();}
@@ -1358,22 +1353,8 @@ $my_top_page = create_settings_page(
 
 // And a sub-page
 
-$my_sub_page = create_settings_page(
 
-  'my_sub_page',
-
-  __( 'Status Page' ),
-
-  array(
-
-    'parent' => 'edit.php?post_type=reviews',
-
-    'title'  => __( 'Status' )
-
-  )
-
-);
-
+add_submenu_page( 'edit.php?post_type=reviews', 'Status', 'Status', '7', 'status', 'status_page' );
 $my_top_page->apply_settings( array(
 
   'my_formatted_section' => array(
@@ -1530,102 +1511,13 @@ $my_top_page->apply_settings( array(
 
 ) );
 
-$my_sub_page->apply_settings( array(
 
-  'my_advanced_section' => array(
-
-    'title'  => __( 'Emails' ),
-
-    'fields' => array(
-
-      /*'my_media'  => array(
-
-        'type'  => 'media',
-
-        'label' => __( 'Media Example' )
-
-      ),
-
-      'my_color'  => array(
-
-        'type'  => 'color',
-
-        'label' => __( 'Color Example' )
-
-      ),*/
-
-	  
-
-      'my_action' => array(
-
-        'type'        => 'action',
-
-        'label'       => __( 'Get Email Statuses' ),
-
-        'description' => __( ''),
-
-        'action'      => 'status_page'
-
-      )
-
-	/*  ,
-
-	
-	  'csv_action' => array(
-
-        'type'        => 'action',
-
-        'label'       => __( 'upload csv' ),
-
-        'description' => __( ''),
-
-        'action'      => 'or_upload_csv'
-
-      )
-
-    )
-
-  ),
-
-  'my_custom_section'   => array(
-
-    'title'  => __( 'Custom' ),
-
-    'fields' => array(
-
-      'my_custom'   => array(
-
-        'label'       => false,
-
-        'description' => __( 'Will be sanitized through the PHP function "do_my_sanitation".'),
-
-        'default'     => __( 'DEFAULT' ),
-
-        'attributes'  => array(
-
-          'style'   => 'font-family: "Comic Sans MS";',
-
-          'pattern' => '[A-Z]*'
-
-        ),
-
-        'sanitize'    => 'do_my_sanitation'
-
-      ) */
-
-    )
-
-  )
-
-) );
 
 
 
 function do_my_action() {
 
-	$text = status_page();
-
-	str_replace(' ', '', $text);
+	
 
 	//echo 'test';
 
