@@ -553,9 +553,9 @@ $table_name = 'wp_osky_reviews_emails';
  echo 'loop';
 	 $email = $result->email;
 
-	 $page = get_page_by_title('Thankyou'. $first_name);
+	 $page = get_page_by_title('Thank You '. $first_name);
 
-	 if(is_page( 'Thankyou'. $first_name ))
+	 if(is_page( 'Thank You '. $first_name ))
 
 	 {
 
@@ -637,13 +637,13 @@ if(rate.textContent==5)
 
 {
 
-var r = confirm("Thankyou, would you like to review us on " + diz.textContent + "?");	
+var r = confirm("Thank You, would you like to review us on " + diz.textContent + "?");	
 
 }
 
 else{ 
 
-var r = confirm("Thankyou for your feedback.");
+var r = confirm("Thank You for your feedback.");
 
     }
 
@@ -976,7 +976,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
     $social_table_name = 'wp_reviews_network';
 
-    $linkurl = get_home_url().'/thankyou'. str_replace ( '@' , '' , $first_name);
+    $linkurl = get_home_url().'/thank-you-'. str_replace ( '@' , '' , '-' . $first_name);
 
   
 
@@ -992,7 +992,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
 	$emailthreec =str_replace('%linkurl%' , $linkurl . ' ' , $emailthreec);   
 
- if(get_page_by_title('Thankyou'. $first_name)!=null)
+ if(get_page_by_title('Thank You '. $first_name)!=null)
 
  {   
 
@@ -1038,11 +1038,11 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
  {  
  $unique_post = array(
 
-  'post_title'    => 'Thankyou' . $first_name,
+  'post_title'    => 'Thank You ' . $first_name,
 
   'post_type'     => 'page',
 
-  'post_name'     => 'Thankyou' . $first_name,
+  'post_name'     => 'Thank You ' . $first_name,
 
   'post_content'  => '[review_form]',
 
@@ -1128,7 +1128,7 @@ $row = $wpdb->get_results ( "
 
     ?><td><?echo $rows->email;?></td><?
 
-	?><td><?echo /*$rows->name*/ 'Brock' ;?></td><?
+	?><td><?echo $rows->firstname . ' ' . $rows->lastname ;?></td><?
 
     ?><td><?echo $rows->status1;?></td> <?
 
@@ -1952,6 +1952,5 @@ if ( isset( $_POST['ocb_member_data'] ) && wp_verify_nonce( $_POST['ocb_member_d
 </div>
 <?	
 }
-schedule_emails (); 
 }
 add_action( 'plugins_loaded', 'wait_utill_load', 10 );
