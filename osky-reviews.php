@@ -11,12 +11,10 @@ Version: 1.0
 Author: OskyBlue
 
 */
-
+require_once( 'wm-settings.php' );		
+require_once( ABSPATH . WPINC . '/pluggable.php' );
 ob_start();
 $wp_rewrite = new WP_Rewrite();
-function wait_utill_load ()
-{
-	
 
 
 
@@ -379,8 +377,6 @@ function form_code() {
 
 	
 
-	
-
 ?>
 
 <link rel="stylesheet" href="<?php bloginfo('reviews.css'); ?>" type="text/css" />
@@ -459,6 +455,7 @@ if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POS
 
  $bool = false;
 
+	global $wpdb;
     // Do some minor form validation to make sure there is content
 
     if (isset ($_POST['title'])) {
@@ -481,7 +478,8 @@ if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POS
 
     }
 
-	
+	$fstn =  $_POST['fst-target'];
+	$sndn =  $_POST['scd-target'];
 
 
 
@@ -514,6 +512,24 @@ if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POS
 	);
 
     //SAVE THE POST
+	$social_table_name = 'wp_reviews_network';
+
+	$the_url = $wpdb->get_var("SELECT url FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
+
+	$the_network = $wpdb->get_var("SELECT network FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
+get_the_title(get_the_ID()); 
+$pieces = explode ( ' ' , get_the_title(get_the_ID()));
+$pieces[2];
+	$bool = true;
+$name = $wpdb->get_var("SELECT firstname FROM $table_name where ");	
+$first_name = $result->firstname;
+$last_name = $result->lastname;
+$admin_email = get_option( 'admin_email' );
+$subject = 'A Review Has Been Left';
+$message = $pieces[2] . ' has left you a review of ' . $_POST['rating'] . ' stars.';
+	wp_mail( $admin_email, $subject, $message);
+	
+	$wpdb->update($table_name, array('reply' => 1), array( 'email' => $email  )); 
 
     $pid = wp_insert_post($new_post);
 
@@ -529,45 +545,25 @@ wp_set_object_terms($pid,array( $_POST['rating']),'reviews_stars');
 
     //REDIRECT TO THE NEW POST ON SAVE
 
-	global $wpdb;
 
-	$social_table_name = 'wp_reviews_network';
-
-	$the_url = $wpdb->get_var("SELECT url FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
-
-	$the_network = $wpdb->get_var("SELECT network FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
-
-	$bool = true;
-
-	//wp_delete_post( get_the_ID() );
-
-do_action('wp_insert_post', 'wp_insert_post');
-
-$table_name = 'wp_osky_reviews_emails';
-
- $results = $wpdb->get_results("SELECT email FROM $table_name ");
-
+$results = $wpdb->get_results("SELECT email FROM $table_name");
  foreach ($results as $result) 
-
  {
- echo 'loop';
+
+
 	 $email = $result->email;
 
 	 $page = get_page_by_title('Thank You '. $first_name);
 
-	 if(is_page( 'Thank You '. $first_name ))
+	
 
-	 {
+}
+do_action('wp_insert_post', 'wp_insert_post');
+wp_delete_post( get_the_ID() );
+$table_name = 'wp_osky_reviews_emails';
 
-	  $wpdb->update($table_name, array('reply' => 1), array( 'email' => $email  ));  
-      echo 'deleted';
-	  wp_delete_post( $page->ID);	  
+ 
 
-	 }
-
-    
-
- }
 
   
 
@@ -637,13 +633,13 @@ if(rate.textContent==5)
 
 {
 
-var r = confirm("Thank You, would you like to review us on " + diz.textContent + "?");	
+var r = confirm("Thank you, would you like to review us on " + diz.textContent + "?");	
 
 }
 
 else{ 
 
-var r = confirm("Thank You for your feedback.");
+var r = confirm("Thank you for your feedback.");
 
     }
 
@@ -948,25 +944,16 @@ function CSV_create_menu() {
 function or_mailtoall($datebool1, $datebool2, $datebool3, $jbo){
 
 global $wpdb;
-
-$emailone = $wpdb->get_var("SELECT emailone FROM wp_osky_reviews_schedule" , 0, 0);
-														
+$emailone = $wpdb->get_var("SELECT emailone FROM wp_osky_reviews_schedule" , 0, 0);														
 $emailtwo = $wpdb->get_var("SELECT emailtwo FROM wp_osky_reviews_schedule" , 0, 0);
-
 $emailthree = $wpdb->get_var("SELECT emailthree FROM wp_osky_reviews_schedule" , 0, 0);
-
 $days1b = $wpdb->get_var("SELECT firstbool FROM wp_osky_reviews_schedule" , 0, 0);
-
 $days2b = $wpdb->get_var("SELECT secondbool FROM wp_osky_reviews_schedule" , 0, 0);
-
 $days3b = $wpdb->get_var("SELECT thirdbool FROM wp_osky_reviews_schedule" , 0, 0);
-
 $rvn = $wpdb->get_var("SELECT rnm FROM wp_reviews_network" , 0, 0);
-
 $table_name = 'wp_osky_reviews_emails';
 $var = false;
 $results = $wpdb->get_results("SELECT email FROM $table_name where reply !=1 AND status3!=1");
-
 $email= $jbo;
 $first_name  = $wpdb->get_var("SELECT firstname FROM wp_osky_reviews_emails where email = '$email'");
 $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where email = '$email'");
@@ -1036,6 +1023,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
  else
 
  {  
+
  $unique_post = array(
 
   'post_title'    => 'Thank You ' . $first_name,
@@ -1044,7 +1032,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
   'post_name'     => 'Thank You ' . $first_name,
 
-  'post_content'  => '[review_form]',
+  'post_content'  => '[review_form] <div id="fst-target" name="fst-target" style="display: none;">'.$first_name.'</div><div id="scd-target" name="scd-target"  style="display: none;">'.$last_name.'</div>' ,
 
   'post_status'   => 'publish',
 
@@ -1057,11 +1045,10 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
   'menu_order' => 0
 
 );
-$var = true;
+
+wp_insert_post( $unique_post );
 }
    
-if($var == true)
- wp_insert_post( $unique_post );
 
 
 
@@ -1128,7 +1115,7 @@ $row = $wpdb->get_results ( "
 
     ?><td><?echo $rows->email;?></td><?
 
-	?><td><?echo $rows->firstname . ' ' . $rows->lastname ;?></td><?
+	?><td><?echo $rows->firstname . $rows->lastname ;?></td><?
 
     ?><td><?echo $rows->status1;?></td> <?
 
@@ -1152,7 +1139,7 @@ $row = $wpdb->get_results ( "
 
 }
 
-
+schedule_emails () ;
 
 function schedule_emails () 
 
@@ -1233,7 +1220,7 @@ add_shortcode( 'review_form', 'fm_shortcode' );
 
 add_shortcode( 'review_post', 'pst_shortcode' );
 
-require_once( 'wm-settings.php' );
+
 
 get_option( 'my_option_name');
 
@@ -1952,5 +1939,3 @@ if ( isset( $_POST['ocb_member_data'] ) && wp_verify_nonce( $_POST['ocb_member_d
 </div>
 <?	
 }
-}
-add_action( 'plugins_loaded', 'wait_utill_load', 10 );
