@@ -6,34 +6,57 @@ Plugin Name: Osky Reviews
 
 Description: A plugin designed to manage reviews for a site
 
-Version: 1.0
+Version: 1.3
 
 Author: OskyBlue
 
 */
-require_once( 'wm-settings.php' );		
-require_once( ABSPATH . WPINC . '/pluggable.php' );
+
 ob_start();
-$wp_rewrite = new WP_Rewrite();
 
-
-
-function create_tables_if_not_exist()
-
-{
 
 global $wpdb;
+$sql = "CREATE TABLE wp_osky_reviews_schedule(
 
+
+
+			  id mediumint(9) NOT NULL AUTO_INCREMENT,
+
+              firstdays smallint(2),
+
+			  firstbool smallint(2),
+
+			  seconddays smallint(2),f
+
+			  secondbool smallint(2),
+
+			  thirddays smallint(2), 
+
+			  thirdbool smallint(2),
+
+			  smsdays smallint(2), 
+
+			  smsbool smallint(2),
+
+			  emailone varchar(1000),
+
+			  emailtwo varchar(1000),
+
+			  emailthree varchar(1000),
+
+			  PRIMARY KEY( id )
+		);";
+		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+		dbDelta($sql);
+		
 $table_name = 'wp_osky_reviews_emails';
 
-		$MSQL = "show tables like '$table_name'";
 
 
 
-		if($wpdb->get_var($MSQL) != $table_name)
 
-		{
-
+		
+ 
 
 
 		   $sql = "CREATE TABLE IF NOT EXISTS wp_osky_reviews_emails (
@@ -70,16 +93,12 @@ $table_name = 'wp_osky_reviews_emails';
 
 			dbDelta($sql);
 
-        }
+        
 
 		
 
-			//$MSQL = "show tables like wp_reviews_network";
 
-		if($wpdb->get_var($MSQL) != 'wp_reviews_network')
-
-		{
-
+		
 
 
 		   $sql = "CREATE TABLE IF NOT EXISTS wp_reviews_network (
@@ -122,23 +141,14 @@ $table_name = 'wp_osky_reviews_emails';
 
 			
 
-        }
+        
 
 		
 
-		$table_name = 'wp_osky_reviews_schedule';
-
-		$MSQL = "show tables like '$table_name'";
 
 
 
-		if($wpdb->get_var($MSQL) != $table_name)
-
-		{
-
-
-
-		   $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+		   $sql = "CREATE TABLE IF NOT EXISTS wp_osky_reviews_schedule(
 
 
 
@@ -160,11 +170,11 @@ $table_name = 'wp_osky_reviews_emails';
 
 			  smsbool smallint(2),
 
-			  emailone varchar(500),
+			  emailone varchar(max),
 
-			  emailtwo varchar(500),
+			  emailtwo varchar(max),
 
-			  emailthree varchar(500),
+			  emailthree varchar(max),
 
 			  PRIMARY KEY( id )
 
@@ -178,24 +188,36 @@ $table_name = 'wp_osky_reviews_emails';
 
 			dbDelta($sql);
 
-        }	
+        	
 
-}
-create_tables_if_not_exist();
+function wait_utill_load ()
+{
+	
 
 
-function or_syle_sync()
+
+
+
+
+function wptuts_styles_with_the_lot()
 
 {
-// Register the style 
-wp_register_style( 'review-style', plugins_url( 'reviews.css', __FILE__ ));
 
- //enqueue the style:
-wp_enqueue_style( 'review-style' );
+    // Register the style like this for a plugin:
+
+    wp_register_style( 'review-style', plugins_url( 'reviews.css', __FILE__ ));
+
+ 
+
+ 
+
+    // For either a plugin or a theme, you can then enqueue the style:
+
+    wp_enqueue_style( 'review-style' );
+
 }
-add_action( 'wp_enqueue_scripts', 'or_syle_sync' );
 
-
+add_action( 'wp_enqueue_scripts', 'wptuts_styles_with_the_lot' );
 
 // register post type for Reviews
 
@@ -241,7 +263,7 @@ $args = array(
 
 'publicly_queryable' => true,
 
-//'taxonomies' => array('category'),  
+
 
 'show_ui' => true,
 
@@ -377,6 +399,8 @@ function form_code() {
 
 	
 
+	
+
 ?>
 
 <link rel="stylesheet" href="<?php bloginfo('reviews.css'); ?>" type="text/css" />
@@ -455,7 +479,6 @@ if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POS
 
  $bool = false;
 
-	global $wpdb;
     // Do some minor form validation to make sure there is content
 
     if (isset ($_POST['title'])) {
@@ -478,8 +501,7 @@ if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POS
 
     }
 
-	$fstn =  $_POST['fst-target'];
-	$sndn =  $_POST['scd-target'];
+	
 
 
 
@@ -512,24 +534,6 @@ if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POS
 	);
 
     //SAVE THE POST
-	$social_table_name = 'wp_reviews_network';
-
-	$the_url = $wpdb->get_var("SELECT url FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
-
-	$the_network = $wpdb->get_var("SELECT network FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
-get_the_title(get_the_ID()); 
-$pieces = explode ( ' ' , get_the_title(get_the_ID()));
-$pieces[2];
-	$bool = true;
-$name = $wpdb->get_var("SELECT firstname FROM $table_name where ");	
-$first_name = $result->firstname;
-$last_name = $result->lastname;
-$admin_email = get_option( 'admin_email' );
-$subject = 'A Review Has Been Left';
-$message = $pieces[2] . ' has left you a review of ' . $_POST['rating'] . ' stars.';
-	wp_mail( $admin_email, $subject, $message);
-	
-	$wpdb->update($table_name, array('reply' => 1), array( 'email' => $email  )); 
 
     $pid = wp_insert_post($new_post);
 
@@ -545,25 +549,45 @@ wp_set_object_terms($pid,array( $_POST['rating']),'reviews_stars');
 
     //REDIRECT TO THE NEW POST ON SAVE
 
+	global $wpdb;
 
-$results = $wpdb->get_results("SELECT email FROM $table_name");
- foreach ($results as $result) 
- {
+	$social_table_name = 'wp_reviews_network';
 
+	$the_url = $wpdb->get_var("SELECT url FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
 
-	 $email = $result->email;
+	$the_network = $wpdb->get_var("SELECT network FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
 
-	 $page = get_page_by_title('Thank You '. $first_name);
+	$bool = true;
 
-	
+	//wp_delete_post( get_the_ID() );
 
-}
 do_action('wp_insert_post', 'wp_insert_post');
-wp_delete_post( get_the_ID() );
+
 $table_name = 'wp_osky_reviews_emails';
 
- 
+ $results = $wpdb->get_results("SELECT email FROM $table_name ");
 
+ foreach ($results as $result) 
+
+ {
+ echo 'loop';
+	 $email = $result->email;
+
+	 echo $page = get_page_by_title('Thankyou'. $first_name);
+
+	 if(is_page( 'Thankyou'. $first_name ))
+
+	 {
+
+	  $wpdb->update($table_name, array('reply' => 1), array( 'email' => $email  ));  
+      echo 'deleted';
+	  wp_delete_post( $page->ID);	  
+
+	 }
+
+    
+
+ }
 
   
 
@@ -633,13 +657,13 @@ if(rate.textContent==5)
 
 {
 
-var r = confirm("Thank you, would you like to review us on " + diz.textContent + "?");	
+var r = confirm("Thankyou, would you like to review us on " + diz.textContent + "?");	
 
 }
 
 else{ 
 
-var r = confirm("Thank you for your feedback.");
+var r = confirm("Thankyou for your feedback.");
 
     }
 
@@ -944,16 +968,25 @@ function CSV_create_menu() {
 function or_mailtoall($datebool1, $datebool2, $datebool3, $jbo){
 
 global $wpdb;
-$emailone = $wpdb->get_var("SELECT emailone FROM wp_osky_reviews_schedule" , 0, 0);														
+
+$emailone = $wpdb->get_var("SELECT emailone FROM wp_osky_reviews_schedule" , 0, 0);
+														
 $emailtwo = $wpdb->get_var("SELECT emailtwo FROM wp_osky_reviews_schedule" , 0, 0);
+
 $emailthree = $wpdb->get_var("SELECT emailthree FROM wp_osky_reviews_schedule" , 0, 0);
+
 $days1b = $wpdb->get_var("SELECT firstbool FROM wp_osky_reviews_schedule" , 0, 0);
+
 $days2b = $wpdb->get_var("SELECT secondbool FROM wp_osky_reviews_schedule" , 0, 0);
+
 $days3b = $wpdb->get_var("SELECT thirdbool FROM wp_osky_reviews_schedule" , 0, 0);
+
 $rvn = $wpdb->get_var("SELECT rnm FROM wp_reviews_network" , 0, 0);
+
 $table_name = 'wp_osky_reviews_emails';
 $var = false;
 $results = $wpdb->get_results("SELECT email FROM $table_name where reply !=1 AND status3!=1");
+
 $email= $jbo;
 $first_name  = $wpdb->get_var("SELECT firstname FROM wp_osky_reviews_emails where email = '$email'");
 $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where email = '$email'");
@@ -963,7 +996,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
     $social_table_name = 'wp_reviews_network';
 
-    $linkurl = get_home_url().'/thank-you-'. str_replace ( '@' , '' , '-' . $first_name);
+    $linkurl = get_home_url().'/thankyou'. str_replace ( '@' , '' , $first_name);
 
   
 
@@ -979,7 +1012,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
 	$emailthreec =str_replace('%linkurl%' , $linkurl . ' ' , $emailthreec);   
 
- if(get_page_by_title('Thank You '. $first_name)!=null)
+ if(get_page_by_title('Thankyou'. $first_name)!=null)
 
  {   
 
@@ -1023,16 +1056,15 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
  else
 
  {  
-
  $unique_post = array(
 
-  'post_title'    => 'Thank You ' . $first_name,
+  'post_title'    => 'Thankyou' . $first_name,
 
   'post_type'     => 'page',
 
-  'post_name'     => 'Thank You ' . $first_name,
+  'post_name'     => 'Thankyou' . $first_name,
 
-  'post_content'  => '[review_form] <div id="fst-target" name="fst-target" style="display: none;">'.$first_name.'</div><div id="scd-target" name="scd-target"  style="display: none;">'.$last_name.'</div>' ,
+  'post_content'  => '[review_form]',
 
   'post_status'   => 'publish',
 
@@ -1045,10 +1077,11 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
   'menu_order' => 0
 
 );
-
-wp_insert_post( $unique_post );
+$var = true;
 }
    
+if($var == true)
+ wp_insert_post( $unique_post );
 
 
 
@@ -1115,7 +1148,7 @@ $row = $wpdb->get_results ( "
 
     ?><td><?echo $rows->email;?></td><?
 
-	?><td><?echo $rows->firstname . $rows->lastname ;?></td><?
+	?><td><?echo /*$rows->name*/ 'Brock' ;?></td><?
 
     ?><td><?echo $rows->status1;?></td> <?
 
@@ -1139,7 +1172,7 @@ $row = $wpdb->get_results ( "
 
 }
 
-schedule_emails () ;
+
 
 function schedule_emails () 
 
@@ -1205,12 +1238,10 @@ $datebool2 = 1;
 
 if($dateiq==date_format($date3,"Y-m-d"))
 $datebool3 = 1;
-	
 	or_mailtoall($datebool1, $datebool2, $datebool3, $jbo);
 }
 
 }
-
 
 function fm_shortcode() {form_code();}
 
@@ -1220,7 +1251,7 @@ add_shortcode( 'review_form', 'fm_shortcode' );
 
 add_shortcode( 'review_post', 'pst_shortcode' );
 
-
+require_once( 'wm-settings.php' );
 
 get_option( 'my_option_name');
 
@@ -1339,8 +1370,22 @@ $my_top_page = create_settings_page(
 );
 
 // And a sub-page
+/*
+$my_sub_page = create_settings_page(
 
+  'my_sub_page',
 
+  __( 'Status Page' ),
+
+  array(
+
+    'parent' => 'edit.php?post_type=reviews',
+
+    'title'  => __( 'Status' )
+
+  )
+
+);*/
 add_submenu_page( 'edit.php?post_type=reviews', 'Status', 'Status', '7', 'status', 'status_page' );
 $my_top_page->apply_settings( array(
 
@@ -1498,13 +1543,15 @@ $my_top_page->apply_settings( array(
 
 ) );
 
-
+$my_sub_page;
 
 
 
 function do_my_action() {
 
-	
+	$text = status_page();
+
+	str_replace(' ', '', $text);
 
 	//echo 'test';
 
@@ -1561,7 +1608,7 @@ function do_my_sanitation( $input, $name ) {
 
 }
 
-add_action( 'my_top_level_page_settings_updated', 'do_my_page_callback' );
+do_action('do_my_page_callback' );
 
 function do_my_page_callback() {
 
@@ -1573,7 +1620,7 @@ function do_my_page_callback() {
 
 	$email_fruit=implode($email_fruit,"");
 
-	if( strpos($email_fruit,'@') !== false && strpos($email_fruit,'.') !== false) {
+
 
         // valid address
 
@@ -1602,18 +1649,9 @@ $the_email = $wpdb->get_var("SELECT email FROM " . 'wp_osky_reviews_emails' . " 
 if($the_email!=$email_fruit)
 	$wpdb->insert( 'wp_osky_reviews_emails', $arguments);
 
-    }
+    
 
-    else {
-
-        // invalid address
-
-		
-
-		//print_r('Error, please check input!');
-
-    }
-
+   
 	
 
 	//social page option
@@ -1709,6 +1747,8 @@ global $wpdb;
 			$wpdb->replace( 'wp_reviews_network', $args);
 
 			
+//seems to work fine until this point
+
 
 	$sch_fruit = get_option('my_multi_section');
 
@@ -1730,7 +1770,7 @@ if($tok[0]!='{')
 	
 		if ($count==1)
 
-			$get =$tok;
+			 $get =$tok;
 
 		if ($count==2)
 
@@ -1746,7 +1786,7 @@ if($tok[0]!='{')
 
         if ($count==5)
 
-			$e1 =$tok;
+			 $e1 =$tok;
 
 		if ($count==6)
 
@@ -1774,11 +1814,7 @@ if($tok[0]!='{')
 
 //echo $get;
 
-$f;
 
-$s;
-
-$t;
 
 $pos1 = strpos($get, "one\":");
 
@@ -1793,7 +1829,7 @@ $whatIWant2 = substr($get, $pos2+5 ,1);
 $whatIWant3 = substr($get, $pos3+7 ,1); 
 
 		   
-
+//main issue here 
 			$wpdb->replace( 'wp_osky_reviews_schedule',  $arg = array(
 
 			'id' => 1,
@@ -1810,9 +1846,9 @@ $whatIWant3 = substr($get, $pos3+7 ,1);
 
 		    'thirdbool' => $whatIWant3, 
 
-		    'smsdays' => '0',
+		    'smsdays' => 0,
 
-		    'smsbool' => '0',
+		    'smsbool' => 0,
 
 			'emailone' => $e1,
 
@@ -1833,11 +1869,13 @@ add_action( 'update_option_custom_fields_section', 'do_my_section_callback' );
 function do_my_section_callback() {
 
   $my_custom_options = get_setting( 'my_custom_section' );
-  // All settings of my_top_level_page have been updated.
 
+
+
+  // All options of custom_fields_section have been updated.
 
 }
-
+do_my_page_callback(); 
 $my_page->add_notice( __( 'My info message.') );
 
 $my_page->add_notice( __( 'Your Settings have Been Saved'), 'updated' );
@@ -1937,3 +1975,6 @@ if ( isset( $_POST['ocb_member_data'] ) && wp_verify_nonce( $_POST['ocb_member_d
 </div>
 <?	
 }
+schedule_emails (); 
+}
+add_action( 'plugins_loaded', 'wait_utill_load', 10 );
