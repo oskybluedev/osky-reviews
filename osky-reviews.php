@@ -1833,10 +1833,8 @@ add_action( 'update_option_custom_fields_section', 'do_my_section_callback' );
 function do_my_section_callback() {
 
   $my_custom_options = get_setting( 'my_custom_section' );
+  // All settings of my_top_level_page have been updated.
 
-
-
-  // All options of custom_fields_section have been updated.
 
 }
 
