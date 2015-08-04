@@ -13,8 +13,7 @@ Author: OskyBlue
 */
 
 ob_start();
-
-
+$wp_rewrite = new WP_Rewrite();
 global $wpdb;
 $sql = "CREATE TABLE wp_osky_reviews_schedule(
 
@@ -573,9 +572,9 @@ $table_name = 'wp_osky_reviews_emails';
  echo 'loop';
 	 $email = $result->email;
 
-	 echo $page = get_page_by_title('Thankyou'. $first_name);
+	 echo $page = get_page_by_title('Thank you '. $first_name);
 
-	 if(is_page( 'Thankyou'. $first_name ))
+	 if(is_page( 'Thank you '. $first_name ))
 
 	 {
 
@@ -726,7 +725,7 @@ $post = get_post();
 $taxonomy = strip_tags( get_the_term_list($post->ID, 'reviews_stars') );
 
 $category = get_the_category(); 
-
+//start of output
 ?>
 
 
@@ -904,7 +903,7 @@ case '5.0':
    <br>
 
 <?php
-
+//end out ouput
 endwhile; 
 
 ?>
@@ -968,7 +967,7 @@ function CSV_create_menu() {
 function or_mailtoall($datebool1, $datebool2, $datebool3, $jbo){
 
 global $wpdb;
-
+//echo $datebool2;
 $emailone = $wpdb->get_var("SELECT emailone FROM wp_osky_reviews_schedule" , 0, 0);
 														
 $emailtwo = $wpdb->get_var("SELECT emailtwo FROM wp_osky_reviews_schedule" , 0, 0);
@@ -996,7 +995,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
     $social_table_name = 'wp_reviews_network';
 
-    $linkurl = get_home_url().'/thankyou'. str_replace ( '@' , '' , $first_name);
+    $linkurl = get_home_url().'/thank you '. str_replace ( '@' , '' , $first_name);
 
   
 
@@ -1012,14 +1011,15 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
 	$emailthreec =str_replace('%linkurl%' , $linkurl . ' ' , $emailthreec);   
 
- if(get_page_by_title('Thankyou'. $first_name)!=null)
+ if(get_page_by_title('Thank you '. $first_name)!=null)
 
  {   
 
-  if($wpdb->get_var( "SELECT status1 FROM $table_name where email =  '$email'" )=='0000-00-00'||null&&$days1b==1&&$datebool1==1)
-
+$temp1 = $wpdb->get_var( "SELECT status1 FROM $table_name where email =  '$email'"); 
+   if(($temp1=='0000-00-00'||$temp1== null)&&($days1b==1&&$datebool1==1))
   { 
-
+ 
+		
 	$wpdb->update($table_name, array('status1' => date("Y-m-d" ) , 'lastsent' => date("Y-m-d" )), array( 'email' => $email  ));
 
     wp_mail( $email, $subject, $emailonec); 
@@ -1027,11 +1027,12 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
   }
 
 	   
-
-  if($wpdb->get_var( "SELECT status2 FROM $table_name where email = '$email'" )=='0000-00-00'||null&&$days2b==1&&$datebool2==1)
+ $temp2 = $wpdb->get_var( "SELECT status2 FROM $table_name where email =  '$email'"); 
+  if(($temp2=='0000-00-00'||$temp2==null)&&($days2b==1&&$datebool2==1))
 
   {
-
+     
+	  
 	  $wpdb->update($table_name, array('status2' => date("Y-m-d" ) , 'lastsent' => date("Y-m-d" )), array( 'email' => $email  ));
 
 	  wp_mail( $email, $subject, $emailtwoc);  	
@@ -1041,9 +1042,10 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
   
 
-   if($wpdb->get_var( "SELECT status3 FROM $table_name where email = '$email'" )=='0000-00-00'&&$days3b==1&&$datebool3==1)
+  $temp3 = $wpdb->get_var( "SELECT status3 FROM $table_name where email =  '$email'"); 
+  if(($temp3=='0000-00-00'||$temp3==null)&&($days3b==1&&$datebool3==1))
 
-  { 
+  {
 
 	 $wpdb->update($table_name, array('status3' => date("Y-m-d" ), 'lastsent' => date("Y-m-d" )), array( 'email' => $email  ));  
 
@@ -1058,11 +1060,11 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
  {  
  $unique_post = array(
 
-  'post_title'    => 'Thankyou' . $first_name,
+  'post_title'    => 'Thank you ' . $first_name,
 
   'post_type'     => 'page',
 
-  'post_name'     => 'Thankyou' . $first_name,
+  'post_name'     => 'Thank you ' . $first_name,
 
   'post_content'  => '[review_form]',
 
@@ -1210,7 +1212,7 @@ foreach($emailobj as $jbo)
 $emaillastsent = $wpdb->get_var("SELECT lastsent FROM wp_osky_reviews_emails where email = '$jbo'" , 0, 0);
 $emailfirstadded = $wpdb->get_var("SELECT firstadded FROM wp_osky_reviews_emails where email = '$jbo'" , 0, 0);
 
-if($emaillastsent==null||$shell)
+if($emaillastsent==null||$emaillastsent==$shell)
 {
 $dateiq = $emailfirstadded;
 }
@@ -1230,14 +1232,16 @@ $date3 = date_create($dateiq);
 date_add($date3,date_interval_create_from_date_string("$days3 days"));
 date_format($date3,"Y-m-d") . '<br>';
 
-if($dateiq==date_format($date1,"Y-m-d"))
+
+if(date ("Y-m-d")>=date_format($date1,"Y-m-d"))
 $datebool1 = 1;
 
-if($dateiq==date_format($date2,"Y-m-d"))
+if(date ("Y-m-d")>=date_format($date2,"Y-m-d"))
 $datebool2 = 1;
 
-if($dateiq==date_format($date3,"Y-m-d"))
+if(date ("Y-m-d")>=date_format($date3,"Y-m-d"))
 $datebool3 = 1;
+
 	or_mailtoall($datebool1, $datebool2, $datebool3, $jbo);
 }
 
@@ -1301,7 +1305,7 @@ $my_value = get_setting( 'my_setting_id', 'my_option_name' );
 
 $my_top_page = create_settings_page(
 
-  'my_top_level_page',
+  'reviews_settings',
 
   __( 'Settings' ),
 
@@ -1421,7 +1425,8 @@ $my_top_page->apply_settings( array(
 
         'label' => __( 'URL' )
 
-      ),
+      )
+	  /*,
 
       'my_number' => array(
 
@@ -1429,7 +1434,7 @@ $my_top_page->apply_settings( array(
 
         'label' => __( 'Refer Minimum Stars' )
 
-      )
+      )*/
     )
 
   ),
