@@ -6,7 +6,7 @@ Plugin Name: Osky Reviews
 
 Description: A plugin designed to manage reviews for a site
 
-Version: 1.3
+Version: 1.4
 
 Author: OskyBlue
 
@@ -1980,6 +1980,5 @@ if ( isset( $_POST['ocb_member_data'] ) && wp_verify_nonce( $_POST['ocb_member_d
 </div>
 <?	
 }
-schedule_emails (); 
 }
 add_action( 'plugins_loaded', 'wait_utill_load', 10 );
