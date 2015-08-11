@@ -6,7 +6,7 @@ Plugin Name: Osky Reviews
 
 Description: A plugin designed to manage reviews for a site
 
-Version: 1.4
+Version: 0.4
 
 Author: OskyBlue
 
@@ -15,6 +15,7 @@ Author: OskyBlue
 ob_start();
 $wp_rewrite = new WP_Rewrite();
 global $wpdb;
+
 $sql = "CREATE TABLE wp_osky_reviews_schedule(
 
 
@@ -261,8 +262,8 @@ $args = array(
 'public' => true,
 
 'publicly_queryable' => true,
-
-
+'_edit_link' => 'post.php?post=%d',
+'rewrite' => false,
 
 'show_ui' => true,
 
@@ -282,7 +283,7 @@ $args = array(
 
 'menu_position' => null,
 
-'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments' )
+'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments','page-attributes','excerpt' )
 
 );
 
@@ -354,23 +355,6 @@ function create_my_taxonomies() {
 
 wp_set_object_terms( 0, 	 array(0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0), 'reviews_stars' );
 
-//wp_set_object_terms( 0, 'one', 'reviews_stars' );
-
-//wp_set_object_terms( 0, '1half', 'reviews_stars' );
-
-//wp_set_object_terms( 0, 'two', 'reviews_stars' );
-
-//wp_set_object_terms( 0, '2half', 'reviews_stars' );
-
-//wp_set_object_terms( 0, '3half', 'reviews_stars' );
-
-//wp_set_object_terms( 0, 'four', 'reviews_stars' );
-
-//wp_set_object_terms( 0, '4half', 'reviews_stars' );
-
-//wp_set_object_terms( 0, 'five', 'reviews_stars' );
-
-//wp_set_object_terms( 0, 'three', 'reviews_stars' );
 
 
 
@@ -504,9 +488,30 @@ if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POS
 
 
 
-//Use 'tax_input' instead of 'post_category' 
+//create author for post
+
+	global $wpdb;
 
 
+
+	
+
+//do_action('wp_insert_post', 'wp_insert_post');
+
+$table_name = 'wp_osky_reviews_emails';
+$first_name = str_replace ('Thank You','',get_the_title());
+$last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where firstname = '$first_name'");
+//$the_network = $wpdb->get_var("SELECT network FROM " . $table_name . " WHERE firstname = $first_name", 0, 0);
+
+	  
+	  
+$user_id = username_exists( $first_name . ' ' . $last_name );
+if ( !$user_id and email_exists($user_email) == false ) {
+	$random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );
+	$user_id = wp_create_user( $user_name, '', '');
+} else {
+	$random_password = __('User already exists.  Password inherited.');
+}
 
   //  $tags = $_POST['post_tags'];
 
@@ -525,6 +530,8 @@ if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POS
     //'tags_input'    =>   array($tags),
 
     'post_status'   =>   'publish',
+	
+	'post_author'   =>   $first_name . ' ' . $last_name,
 
     'post_type'     =>   'reviews' ,
 
@@ -547,49 +554,30 @@ wp_set_object_terms($pid,array( $_POST['rating']),'reviews_stars');
  
 
     //REDIRECT TO THE NEW POST ON SAVE
-
-	global $wpdb;
-
 	$social_table_name = 'wp_reviews_network';
 
 	$the_url = $wpdb->get_var("SELECT url FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
 
 	$the_network = $wpdb->get_var("SELECT network FROM " . $social_table_name . " WHERE id = '1'", 0, 0);
-
+	
+    $linkurl = get_home_url().'/wp-admin/post.php?post=osky#$%&action=edit';
+	$linkurl = str_replace ( 'osky#$%' , $pid , $linkurl);
+	
+	
 	$bool = true;
+	  $email = $result->email;
+	  $wpdb->update( $table_name, array( 'reply' => 1	), array( 'firstname' => $first_name ));
+	  $subject = 'test';
+$text = 'A review of ' . $_POST['rating']  . ' stars has been left by' . $first_name . '.<br>' . 'You can view it here' . $linkurl;
+$adminn = get_option(my_admin_section);
+foreach($adminn as $iterate)
+{
+	
+if($iterate==1)
+wp_mail( get_option( 'admin_email' ), 'A review has been left', $text); 
+}	  
 
-	//wp_delete_post( get_the_ID() );
-
-do_action('wp_insert_post', 'wp_insert_post');
-
-$table_name = 'wp_osky_reviews_emails';
-
- $results = $wpdb->get_results("SELECT email FROM $table_name ");
-
- foreach ($results as $result) 
-
- {
- echo 'loop';
-	 $email = $result->email;
-
-	 echo $page = get_page_by_title('Thank you '. $first_name);
-
-	 if(is_page( 'Thank you '. $first_name ))
-
-	 {
-
-	  $wpdb->update($table_name, array('reply' => 1), array( 'email' => $email  ));  
-      echo 'deleted';
-	  wp_delete_post( $page->ID);	  
-
-	 }
-
-    
-
- }
-
-  
-
+	
 ?>
 
 <div id="dom-target" style="display: none;">
@@ -656,13 +644,13 @@ if(rate.textContent==5)
 
 {
 
-var r = confirm("Thankyou, would you like to review us on " + diz.textContent + "?");	
+var r = confirm("Thank you, would you like to review us on " + diz.textContent + "?");	
 
 }
 
 else{ 
 
-var r = confirm("Thankyou for your feedback.");
+var r = confirm("Thank you for your feedback.");
 
     }
 
@@ -681,7 +669,7 @@ else
 
 
 
-
+ wp_delete_post( get_the_ID() );	 
 }
 
 }
@@ -721,18 +709,19 @@ query_posts( array( 'post_type' => 'reviews', 'posts_per_page' => 10, 'ignore_st
 //echo the reviews	
 
 $post = get_post();
-
+$slug = $post->post_name;
+$linkurl = get_home_url() . '/'.  $slug;
 $taxonomy = strip_tags( get_the_term_list($post->ID, 'reviews_stars') );
-
 $category = get_the_category(); 
 //start of output
+	
 ?>
 
 
 
-    <h3><?php echo the_title(); echo " "; ?>
+    <h3><a href = "<?php echo $linkurl; ?>"> <?php echo the_title();?> </a>
 
-	
+
 
     <?php switch($taxonomy)
 
@@ -995,7 +984,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
     $social_table_name = 'wp_reviews_network';
 
-    $linkurl = get_home_url().'/thank you '. str_replace ( '@' , '' , $first_name);
+    $linkurl = get_home_url().'/thank-you-'. str_replace ( '@' , '' , $first_name);
 
   
 
@@ -1011,7 +1000,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
 
 	$emailthreec =str_replace('%linkurl%' , $linkurl . ' ' , $emailthreec);   
 
- if(get_page_by_title('Thank you '. $first_name)!=null)
+ if(get_page_by_title('Thank You ' . $first_name)!=null)
 
  {   
 
@@ -1060,11 +1049,11 @@ $temp1 = $wpdb->get_var( "SELECT status1 FROM $table_name where email =  '$email
  {  
  $unique_post = array(
 
-  'post_title'    => 'Thank you ' . $first_name,
+  'post_title'    => 'Thank You ' . $first_name,
 
   'post_type'     => 'page',
 
-  'post_name'     => 'Thank you ' . $first_name,
+  'post_name'     => 'Thank You ' . $first_name,
 
   'post_content'  => '[review_form]',
 
@@ -1074,7 +1063,7 @@ $temp1 = $wpdb->get_var( "SELECT status1 FROM $table_name where email =  '$email
 
   'ping_status' => 'closed',
 
-  'post_author' => 1,
+  'post_author' => first_name . ' ' . $last_name,
 
   'menu_order' => 0
 
@@ -1356,6 +1345,7 @@ $my_top_page = create_settings_page(
     )
 
   ),
+  
 
   array(
 
@@ -1426,6 +1416,35 @@ $my_top_page->apply_settings( array(
         'label' => __( 'URL' )
 
       )
+	  /*,
+
+      'my_number' => array(
+
+        'type'  => 'number',
+
+        'label' => __( 'Refer Minimum Stars' )
+
+      )*/
+    )
+
+  ),
+   'my_admin_section' => array(
+
+    'title'  => __( 'Admin Notification' ),
+
+    'fields' => array(
+
+      'my_select' => array(
+
+        'type'    => 'checkbox',
+
+        'label'   => __( 'Admin Notification Enabled' ),
+
+       
+
+      ),
+
+     
 	  /*,
 
       'my_number' => array(
@@ -1585,8 +1604,33 @@ function send_test_email ()
 { 
 
 global $wpdb;
+$unique_post = array(
 
-$linkurl = 'http://brock.oskydev.com/2145-2/';
+  'post_title'    => 'Thank You Tester',
+
+  'post_type'     => 'page',
+
+  'post_name'     => 'Thank You Tester',
+
+  'post_content'  => '[review_form]',
+
+  'post_status'   => 'publish',
+
+  'comment_status' => 'closed',
+
+  'ping_status' => 'closed',
+
+  'post_author' => 1,
+
+  'menu_order' => 0
+
+);
+
+ $name = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name='Thank You Tester'");  
+
+ if ($name != '')
+ wp_insert_post( $unique_post );
+$linkurl =  get_permalink ($name);
 $emailsender = $wpdb->get_var("SELECT email FROM wp_osky_reviews_emails where id = 1" , 0, 0);
 
 $emailone = $wpdb->get_var("SELECT emailone FROM wp_osky_reviews_schedule" , 0, 0);
