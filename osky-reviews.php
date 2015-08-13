@@ -6,7 +6,7 @@ Plugin Name: Osky Reviews
 
 Description: A plugin designed to manage reviews for a site
 
-Version: 0.4
+Version: 0.5
 
 Author: OskyBlue
 
@@ -499,19 +499,14 @@ if( 'POST' == $_SERVER['REQUEST_METHOD'] && !empty( $_POST['action'] ) &&  $_POS
 //do_action('wp_insert_post', 'wp_insert_post');
 
 $table_name = 'wp_osky_reviews_emails';
-$first_name = str_replace ('Thank You','',get_the_title());
+$first_name = str_replace ('Thank You ','',get_the_title());
 $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where firstname = '$first_name'");
-//$the_network = $wpdb->get_var("SELECT network FROM " . $table_name . " WHERE firstname = $first_name", 0, 0);
 
+$wpdb->update( 'wp_osky_reviews_emails', array( 'reply' => date("Y-m-d" )	), array('firstname' => $first_name, 'lastname' =>$last_name));
 	  
 	  
 $user_id = username_exists( $first_name . ' ' . $last_name );
-if ( !$user_id and email_exists($user_email) == false ) {
-	$random_password = wp_generate_password( $length=12, $include_standard_special_chars=false );
-	$user_id = wp_create_user( $user_name, '', '');
-} else {
-	$random_password = __('User already exists.  Password inherited.');
-}
+
 
   //  $tags = $_POST['post_tags'];
 
@@ -566,9 +561,10 @@ wp_set_object_terms($pid,array( $_POST['rating']),'reviews_stars');
 	
 	$bool = true;
 	  $email = $result->email;
-	  $wpdb->update( $table_name, array( 'reply' => 1	), array( 'firstname' => $first_name ));
+	
+	  
 	  $subject = 'test';
-$text = 'A review of ' . $_POST['rating']  . ' stars has been left by' . $first_name . '.<br>' . 'You can view it here' . $linkurl;
+$text = 'A review of ' . $_POST['rating']  . ' stars has been left by ' . $first_name . ' ' . $last_name . ". You can view it here " . $linkurl;
 $adminn = get_option(my_admin_section);
 foreach($adminn as $iterate)
 {
@@ -644,7 +640,7 @@ if(rate.textContent==5)
 
 {
 
-var r = confirm("Thank you, would you like to review us on " + diz.textContent + "?");	
+var r = confirm("Thank you, would you like to review us on " + diz.textContent);	
 
 }
 
@@ -669,7 +665,7 @@ else
 
 
 
- wp_delete_post( get_the_ID() );	 
+ wp_delete_post( get_the_ID(),true);	 
 }
 
 }
@@ -682,17 +678,9 @@ function add_reviews()
 
 $args = array('post_type'=> 'Reviews');
 
-		query_posts($args);
+		//query_posts($args);
 
  
-
-
-
-
-
-//pagination
-
-if (have_posts()) :
 
 $paged = ( get_query_var('paged') ) ? get_query_var('paged') : 1;
 
@@ -700,8 +688,9 @@ query_posts( array( 'post_type' => 'reviews', 'posts_per_page' => 10, 'ignore_st
 
 
 
+//pagination
 
-
+if (have_posts()) :
 
 
 	while (have_posts()) : the_post();
@@ -973,11 +962,12 @@ $rvn = $wpdb->get_var("SELECT rnm FROM wp_reviews_network" , 0, 0);
 
 $table_name = 'wp_osky_reviews_emails';
 $var = false;
-$results = $wpdb->get_results("SELECT email FROM $table_name where reply !=1 AND status3!=1");
+$results = $wpdb->get_results("SELECT email FROM $table_name where reply == 0000-00-00");
 
 $email= $jbo;
 $first_name  = $wpdb->get_var("SELECT firstname FROM wp_osky_reviews_emails where email = '$email'");
 $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where email = '$email'");
+$reply  = $wpdb->get_var("SELECT reply FROM wp_osky_reviews_emails where email = '$email'");
 //$datebool1 . ' ' . $datebool2 . ' ' . $datebool3 .  ' ' . $jbo . '<br>';
 //$days1b . ' ' . $days2b . ' ' . $days3b . '<br>';
     $subject = 'Please Review Us';
@@ -1005,7 +995,7 @@ $last_name  = $wpdb->get_var("SELECT lastname FROM wp_osky_reviews_emails where 
  {   
 
 $temp1 = $wpdb->get_var( "SELECT status1 FROM $table_name where email =  '$email'"); 
-   if(($temp1=='0000-00-00'||$temp1== null)&&($days1b==1&&$datebool1==1))
+   if(($temp1=='0000-00-00'||$temp1== null)&&($days1b==1&&$datebool1==1)&&($reply=='0000-00-00'))
   { 
  
 		
@@ -1017,7 +1007,7 @@ $temp1 = $wpdb->get_var( "SELECT status1 FROM $table_name where email =  '$email
 
 	   
  $temp2 = $wpdb->get_var( "SELECT status2 FROM $table_name where email =  '$email'"); 
-  if(($temp2=='0000-00-00'||$temp2==null)&&($days2b==1&&$datebool2==1))
+  if(($temp2=='0000-00-00'||$temp2==null)&&($days2b==1&&$datebool2==1)&&($reply=='0000-00-00'))
 
   {
      
@@ -1032,7 +1022,7 @@ $temp1 = $wpdb->get_var( "SELECT status1 FROM $table_name where email =  '$email
   
 
   $temp3 = $wpdb->get_var( "SELECT status3 FROM $table_name where email =  '$email'"); 
-  if(($temp3=='0000-00-00'||$temp3==null)&&($days3b==1&&$datebool3==1))
+  if(($temp3=='0000-00-00'||$temp3==null)&&($days3b==1&&$datebool3==1)&&($reply=='0000-00-00'))
 
   {
 
@@ -1044,7 +1034,7 @@ $temp1 = $wpdb->get_var( "SELECT status1 FROM $table_name where email =  '$email
 
  }
 
- else
+ else  
 
  {  
  $unique_post = array(
@@ -1072,7 +1062,11 @@ $var = true;
 }
    
 if($var == true)
- wp_insert_post( $unique_post );
+	if ($reply=='0000-00-00')
+	{
+	 wp_insert_post( $unique_post );	
+	}
+
 
 
 
@@ -1139,7 +1133,7 @@ $row = $wpdb->get_results ( "
 
     ?><td><?echo $rows->email;?></td><?
 
-	?><td><?echo /*$rows->name*/ 'Brock' ;?></td><?
+	?><td><?echo $rows->firstname . ' ' . $rows->lastname;?></td><?
 
     ?><td><?echo $rows->status1;?></td> <?
 
@@ -1337,10 +1331,6 @@ $my_top_page = create_settings_page(
 		  'description' =>  'How create a csv file <a> http://www.computerhope.com/issues/ch001356.htm </a>' 
 
         )
-
-        
-
-
       )
     )
 
@@ -1568,8 +1558,6 @@ $my_top_page->apply_settings( array(
 ) );
 
 $my_sub_page;
-
-
 
 function do_my_action() {
 
